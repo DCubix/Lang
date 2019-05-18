@@ -6,7 +6,7 @@ return class {
 		self.tokens = tokens ~= nil and tokens or {}
 	end;
 	parse = function(self)
-		return self:__addsub()
+		return self:__logicOr()
 	end;
 
 	__accept = function(self, toktype, lex)
@@ -44,10 +44,10 @@ return class {
 	end;
 
 	__factor = function(self)
-		if self:__accept("num") then
+		if self:__accept({ "num", "id" }) then
 			return { type = "lit", value = self:__last().value }
 		elseif self:__accept("(") then
-			local ex = self:__addsub()
+			local ex = self:__logicOr()
 			self:__expect(")")
 			return ex
 		else
@@ -58,7 +58,7 @@ return class {
 	end;
 
 	__unary = function(self)
-		if self:__accept("-") then
+		if self:__accept({ "+", "-", "~", "!" }) then
 			local op = self:__last().type
 			local right = self:__factor()
 			return { type = "un", val = right, op = op }
@@ -68,7 +68,7 @@ return class {
 
 	__muldiv = function(self)
 		local left = self:__unary()
-		while self:__accept({ "*", "/" }) do
+		while self:__accept({ "*", "/", "%" }) do
 			local op = self:__last().type
 			local right = self:__unary()
 			left = { type = "bin", a = left, b = right, op = op }
@@ -86,4 +86,83 @@ return class {
 		return left
 	end;
 
+	__bitShift = function(self)
+		local left = self:__addsub()
+		while self:__accept({ "<<", ">>" }) do
+			local op = self:__last().type
+			local right = self:__addsub()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__compare = function(self)
+		local left = self:__bitShift()
+		while self:__accept({ "<", ">", "<=", ">=" }) do
+			local op = self:__last().type
+			local right = self:__bitShift()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__compareEqNeq = function(self)
+		local left = self:__compare()
+		while self:__accept({ "==", "!=" }) do
+			local op = self:__last().type
+			local right = self:__compare()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__bitAnd = function(self)
+		local left = self:__compareEqNeq()
+		while self:__accept("&") do
+			local op = self:__last().type
+			local right = self:__compareEqNeq()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__bitXor = function(self)
+		local left = self:__bitAnd()
+		while self:__accept("^") do
+			local op = self:__last().type
+			local right = self:__bitAnd()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__bitOr = function(self)
+		local left = self:__bitXor()
+		while self:__accept("|") do
+			local op = self:__last().type
+			local right = self:__bitXor()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__logicAnd = function(self)
+		local left = self:__bitOr()
+		while self:__accept("&&") do
+			local op = self:__last().type
+			local right = self:__bitOr()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
+
+	__logicOr = function(self)
+		local left = self:__logicAnd()
+		while self:__accept("||") do
+			local op = self:__last().type
+			local right = self:__logicAnd()
+			left = { type = "bin", a = left, b = right, op = op }
+		end
+		return left
+	end;
 }
