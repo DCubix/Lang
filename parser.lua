@@ -304,7 +304,6 @@ return class {
 		elseif self:__accept("{") then return self:__block()
 		elseif self:__accept("kw", "if") then return self:__ifStmt()
 		elseif self:__accept("kw", "for") then return self:__forStmt()
-		elseif self:__accept("kw", "func") then return self:__funcDefStmt()
 		elseif self:__accept("kw", "return") then
 			if self:__accept(";") then return { type = "return", line = self:__last().line }
 			else return { type = "return", expr = self:__exprStmt(), line = self:__last().line }
@@ -354,6 +353,7 @@ return class {
 		if self:__accept("kw", "let") then
 			local decl = self:__varDecl()
 			if self:__expect(";") then return decl end
+		elseif self:__accept("kw", "func") then return self:__funcDefStmt()
 		end
 		return self:__stmt()
 	end;
