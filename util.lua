@@ -1,3 +1,5 @@
+class = require "clasp"
+
 util = {
 	dump = function(o, level, indentsize)
 		indentsize=  indentsize ~= nil and indentsize or 3
@@ -29,7 +31,29 @@ util = {
 			else return tostring(o)
 			end
 		end
-	end
+	end,
+	Stack = class {
+		init = function(self)
+			self.data = {}
+		end;
+		push = function(self, value)
+			table.insert(self.data, value)
+		end;
+		pop = function(self)
+			local value = self.data[#self.data]
+			table.remove(self.data, #self.data)
+			return value
+		end;
+		top = function(self)
+			return self.data[#self.data]
+		end;
+		empty = function(self)
+			return #self.data == 0
+		end;
+		at = function(self, k)
+			return self.data[k]
+		end;
+	}
 }
 
 return util
