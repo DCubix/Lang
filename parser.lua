@@ -232,6 +232,7 @@ return class {
 
 	__ifStmt = function(self)
 		if self:__expect("(") then
+			local ln = self:__last().line
 			local cond = self:__expr()
 			if self:__expect(")") then
 				local ifbody = self:__stmt()
@@ -239,7 +240,7 @@ return class {
 				if self:__accept("kw", "else") then
 					elsebody = self:__stmt()
 				end
-				return { type = "if", cond = cond, ifbody = ifbody, elsebody = elsebody, line = self:__last().line }
+				return { type = "if", cond = cond, ifbody = ifbody, elsebody = elsebody, line = ln }
 			end
 		end
 		return nil
@@ -268,7 +269,7 @@ return class {
 			local fun = self:__last().value
 			while true do
 				if self:__accept("(") then
-					fun = self:__finishfuncDef(fun)
+					fun = self:__finishfuncDef(fun, self:__last().line)
 				else
 					break
 				end
@@ -278,7 +279,7 @@ return class {
 		return nil
 	end;
 
-	__finishfuncDef = function(self, name)
+	__finishfuncDef = function(self, name, ln)
 		local args = {}
 		if self:__last().type ~= ")" then
 			repeat
@@ -293,7 +294,7 @@ return class {
 
 		if self:__expect(")") then
 			local body = self:__stmt()
-			return { type = "func_def", name = name, args = args, body = body, paren = self:__last() }
+			return { type = "func_def", name = name, args = args, body = body, paren = self:__last(), line = ln }
 		end
 		return nil
 	end;
@@ -306,7 +307,7 @@ return class {
 		elseif self:__accept("kw", "func") then return self:__funcDefStmt()
 		elseif self:__accept("kw", "return") then
 			if self:__accept(";") then return { type = "return", line = self:__last().line }
-			else return { type = "return", expr = self:__exprStmt() }
+			else return { type = "return", expr = self:__exprStmt(), line = self:__last().line }
 			end
 		elseif self:__accept("kw", "break") then
 			self:__expect(";");
