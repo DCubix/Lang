@@ -1,4 +1,7 @@
 util = require "util"
+tokenize = require "tokenizer"
+Parser = require "parser"
+
 id = 0
 usesrng = false
 rngit = [[function __it(a)
@@ -192,6 +195,21 @@ function visit(ast, islocal)
 		local code = visit(ast.code)
 		if usesrng then code = rngit .. code end
 		return code
+	elseif ast.type == "import" then
+		-- read and parse
+		-- local f = io.open(ast.path, "r")
+		-- if f then
+		-- 	local mod = f:read("*all")
+		-- 	local tokens = tokenize(mod)
+		-- 	local parser = Parser(tokens)
+		-- 	local ast = parser:parse()
+		-- 	f:close()
+		-- 	return visit(ast)
+		-- else
+		-- 	print("ERROR(mod): Invalid file. '" .. ast.path .. "'")
+		-- 	return ""
+		-- end
+		return ""
 	else
 		return ""
 	end

@@ -299,11 +299,20 @@ return class {
 		return nil
 	end;
 
+	__importStmt = function(self)
+		if self:__accept("str") then
+			local val = self:__last().value
+			return { type = "import", path = val, line = self:__last().line }
+		end
+		return nil
+	end;
+
 	__stmt = function(self)
 		if self:__accept("id", "print") then return self:__printStmt()
 		elseif self:__accept("{") then return self:__block()
 		elseif self:__accept("kw", "if") then return self:__ifStmt()
 		elseif self:__accept("kw", "for") then return self:__forStmt()
+		elseif self:__accept("kw", "import") then return self:__importStmt()
 		elseif self:__accept("kw", "return") then
 			if self:__accept(";") then return { type = "return", line = self:__last().line }
 			else return { type = "return", expr = self:__exprStmt(), line = self:__last().line }

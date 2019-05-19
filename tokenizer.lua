@@ -40,7 +40,7 @@ end
 
 return function(input)
 	local keywords = Set {
-		"func", "if", "else", "let", "return", "break", "continue", "for", "in"
+		"func", "if", "else", "let", "return", "break", "continue", "for", "in", "import"
 	}
 
 	local tokens = {}
